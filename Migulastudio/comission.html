@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIGULA STUDIO · Commission an Artifact</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --black: #0a0a0a; --off-black: #111; --dark: #161616; --mid: #2a2a2a;
+    --gold: #c8a97e; --gold-light: #d9bc98; --white: #f4f0eb; --muted: #777;
+    --serif: 'Georgia','Times New Roman',serif;
+    --sans: 'Helvetica Neue',Arial,sans-serif;
+    --ease: cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--white); font-family: var(--sans); overflow-x: hidden; }
+
+  /* ── NAV (same as landing) ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 48px;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.97), transparent);
+    transition: background .4s, padding .4s;
+  }
+  nav.scrolled { background: rgba(10,10,10,0.98); padding: 16px 48px; }
+  .nav-logo img { height: 26px; filter: brightness(0) invert(1); opacity: .85; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: .65; transition: opacity .3s; }
+  .nav-links a:hover { opacity: 1; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; z-index: 300; }
+  .hamburger span { display: block; width: 24px; height: 1px; background: var(--white); transition: transform .4s var(--ease), opacity .3s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  .mobile-menu {
+    display: none; position: fixed; inset: 0; z-index: 150;
+    background: rgba(10,10,10,0.98); backdrop-filter: blur(12px);
+    flex-direction: column; justify-content: center; align-items: center; gap: 36px;
+    opacity: 0; transition: opacity .4s;
+  }
+  .mobile-menu.open { opacity: 1; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--white); text-decoration: none; letter-spacing: .05em; transition: color .3s; }
+  .mobile-menu a:hover { color: var(--gold); }
+
+  /* ── BUTTONS & UTILITY ── */
+  .btn { display: inline-block; padding: 14px 36px; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; text-decoration: none; transition: background .3s, color .3s, transform .3s; cursor: pointer; }
+  .btn-gold { background: var(--gold); color: var(--black); }
+  .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-outline { background: transparent; color: var(--white); border: 1px solid rgba(200,169,126,.45); }
+  .btn-outline:hover { background: rgba(200,169,126,.1); color: var(--gold-light); transform: translateY(-2px); }
+  .section-label { font-size: 9px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; display: block; }
+  .divider { width: 40px; height: 1px; background: var(--gold); margin: 28px 0; }
+  .reveal { opacity:0; transform:translateY(36px); transition:opacity .8s ease, transform .8s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* ── HERO (commission specific) ── */
+  .commission-hero {
+    position: relative; height: 70vh; min-height: 550px;
+    display: flex; align-items: flex-end; padding: 72px 64px;
+    background: url('https://static.wixstatic.com/media/372d64_f782a570281c4be59283058e7c2294ebf003.jpg/v1/fill/w_1500,h_900,al_c,q_85,enc_avif/372d64_f782a570281c4be59283058e7c2294ebf003.jpg') center 30%/cover no-repeat;
+  }
+  .commission-hero::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(10,10,10,.85) 0%, rgba(10,10,10,.2) 70%);
+  }
+  .hero-content { position: relative; z-index: 2; max-width: 680px; }
+  .hero-eyebrow { font-size: 10px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 22px; }
+  .hero-title { font-family: var(--serif); font-size: clamp(44px,6vw,80px); font-weight: 400; line-height: 1.1; margin-bottom: 24px; }
+  .hero-title em { font-style: italic; color: var(--gold-light); }
+  .hero-sub { font-size: 14px; line-height: 1.8; color: rgba(244,240,235,.7); max-width: 500px; margin-bottom: 40px; }
+
+  /* ── PROCESS STEPS ── */
+  .process-section { padding: 100px 64px; background: var(--off-black); }
+  .process-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 48px; margin-top: 56px; }
+  .process-step { text-align: center; }
+  .step-number { font-family: var(--serif); font-size: 52px; color: var(--gold); opacity: 0.4; margin-bottom: 16px; line-height: 1; }
+  .step-title { font-size: 13px; letter-spacing: .25em; text-transform: uppercase; margin-bottom: 12px; color: var(--white); }
+  .step-desc { font-size: 13px; line-height: 1.7; color: rgba(244,240,235,.6); }
+
+  /* ── MATERIALS & PROVENANCE (split layout) ── */
+  .materials-section {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+    background: var(--black);
+  }
+  .materials-panel {
+    position: relative; min-height: 520px; overflow: hidden;
+    display: flex; align-items: flex-end; padding: 56px 48px;
+  }
+  .materials-panel img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(.5); transition: transform .7s ease;
+  }
+  .materials-panel:hover img { transform: scale(1.03); }
+  .materials-content { position: relative; z-index: 2; max-width: 380px; }
+  .materials-content h3 { font-family: var(--serif); font-size: 28px; font-weight: 400; margin-bottom: 18px; }
+  .materials-content p { font-size: 13px; line-height: 1.8; color: rgba(244,240,235,.7); margin-bottom: 20px; }
+  .materials-content ul { list-style: none; margin-top: 16px; }
+  .materials-content li { font-size: 12px; margin-bottom: 8px; color: var(--gold); letter-spacing: .05em; }
+
+  /* ── TESTIMONIAL (commission specific) ── */
+  .testimonial-section {
+    padding: 100px 64px; text-align: center; background: var(--black);
+    border-top: 1px solid var(--mid); border-bottom: 1px solid var(--mid);
+  }
+  .testimonial-section blockquote {
+    font-family: var(--serif); font-size: clamp(20px,2.5vw,30px);
+    max-width: 780px; margin: 0 auto 28px; font-style: italic;
+    color: rgba(244,240,235,.85);
+  }
+  .testimonial-section cite { font-size: 11px; letter-spacing: .2em; color: var(--gold); text-transform: uppercase; }
+
+  /* ── INQUIRY FORM ── */
+  .inquiry-section {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    padding: 100px 64px; background: var(--off-black);
+    align-items: start;
+  }
+  .inquiry-intro h2 { font-family: var(--serif); font-size: clamp(32px,3.5vw,48px); font-weight: 400; margin-bottom: 20px; }
+  .inquiry-intro p { font-size: 13px; line-height: 1.85; color: rgba(244,240,235,.6); margin-bottom: 20px; }
+  .inquiry-intro .note { font-size: 11px; letter-spacing: .08em; color: rgba(200,169,126,.6); font-style: italic; margin-top: 20px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label { font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
+  .form-field input, .form-field textarea, .form-field select {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(200,169,126,.2);
+    color: var(--white); font-family: var(--sans); font-size: 13px;
+    padding: 13px 16px; outline: none; transition: border-color .3s, box-shadow .3s;
+    resize: none;
+  }
+  .form-field input:focus, .form-field textarea:focus, .form-field select:focus {
+    border-color: rgba(200,169,126,.6); box-shadow: 0 0 0 1px rgba(200,169,126,0.2);
+  }
+  .form-submit { grid-column: 1/-1; margin-top: 12px; }
+  .btn-submit {
+    width: 100%; padding: 15px; background: var(--gold); color: var(--black);
+    border: none; font-family: var(--sans); font-size: 10px; letter-spacing: .25em;
+    text-transform: uppercase; cursor: pointer; transition: background .3s, transform .3s;
+  }
+  .btn-submit:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .form-msg { grid-column: 1/-1; font-size: 12px; text-align: center; color: var(--gold); min-height: 18px; margin-top: 8px; }
+
+  /* ── FOOTER (identical to landing) ── */
+  footer { background: var(--black); border-top: 1px solid var(--mid); padding: 64px 64px 36px; }
+  .footer-inner { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+  .footer-brand img { height: 22px; filter: brightness(0) invert(1); opacity: .55; margin-bottom: 18px; display: block; }
+  .footer-brand p { font-size: 12px; line-height: 1.9; color: var(--muted); }
+  .footer-col h4 { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 10px; }
+  .footer-col a { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: .04em; transition: color .3s; }
+  .footer-col a:hover { color: var(--white); }
+  .socials { display: flex; gap: 16px; margin-top: 4px; }
+  .socials a { font-size: 11px; letter-spacing: .12em; color: var(--muted); text-decoration: none; transition: color .3s; }
+  .socials a:hover { color: var(--gold); }
+  .footer-bottom { border-top: 1px solid var(--mid); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-bottom p { font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+
+  @media (max-width: 860px) {
+    nav { padding: 18px 24px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: flex; }
+    .commission-hero { padding: 48px 28px; height: 60vh; }
+    .process-section, .testimonial-section, .inquiry-section { padding: 72px 28px; }
+    .process-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+    .materials-section { grid-template-columns: 1fr; }
+    .materials-panel { min-height: 420px; padding: 40px 28px; }
+    .inquiry-section { grid-template-columns: 1fr; gap: 44px; }
+    .form-grid { grid-template-columns: 1fr; }
+    footer { padding: 56px 28px 28px; }
+    .footer-inner { grid-template-columns: 1fr 1fr; gap: 36px; }
+    .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (max-width: 480px) {
+    .process-grid { grid-template-columns: 1fr; }
+    .hero-title { font-size: 38px; }
+    .footer-inner { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">
+    <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Studio</a></li>
+    <li><a href="index.html#portfolio">Portfolio</a></li>
+    <li><a href="index.html#second-skin">Second Skin</a></li>
+    <li><a href="commission.html" style="opacity:1;">Commission</a></li>
+    <li><a href="index.html#guild-form">The Guild</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Studio</a>
+  <a href="index.html#portfolio">Portfolio</a>
+  <a href="index.html#second-skin">Second Skin</a>
+  <a href="commission.html">Commission</a>
+  <a href="index.html#guild-form">The Guild</a>
+</div>
+
+<!-- Hero -->
+<section class="commission-hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Dariusz Migula · Atelier Maspalomas</p>
+    <h1 class="hero-title">Not a purchase.<br><em>A collaboration.</em></h1>
+    <p class="hero-sub">Each commission begins as a conversation and ends as a one‑of‑one artifact – shaped entirely by hand in the Canary Islands.</p>
+    <a href="#inquiry" class="btn btn-gold">Request a consultation</a>
+  </div>
+</section>
+
+<!-- The Process -->
+<section class="process-section reveal">
+  <span class="section-label">How we work</span>
+  <h2 style="font-family:var(--serif); font-size:clamp(28px,3vw,42px); font-weight:400;">The path to your artifact</h2>
+  <div class="divider"></div>
+  <div class="process-grid">
+    <div class="process-step"><div class="step-number">01</div><div class="step-title">First exchange</div><div class="step-desc">Virtual or in‑person, we discuss your vision, lifestyle, and material preferences.</div></div>
+    <div class="process-step"><div class="step-number">02</div><div class="step-title">Material & silhouette</div><div class="step-desc">Selection from rare fabrics, followed by a preliminary sketch and toile.</div></div>
+    <div class="process-step"><div class="step-number">03</div><div class="step-title">Fitting & refinement</div><div class="step-desc">One or two fittings in the atelier, where the garment is adjusted by hand.</div></div>
+    <div class="process-step"><div class="step-number">04</div><div class="step-title">Hand‑finishing</div><div class="step-desc">Final stitching, signature, and delivery – with a certificate of provenance.</div></div>
+  </div>
+</section>
+
+<!-- Materials & Provenance (split visual) -->
+<div class="materials-section">
+  <div class="materials-panel">
+    <img src="https://static.wixstatic.com/media/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg/v1/fill/w_1000,h_1000,al_c,q_85,enc_avif/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg" alt="Fabric closeup" loading="lazy">
+    <div class="materials-content">
+      <h3>Materials with memory</h3>
+      <p>Only natural fibres that age with grace: hand‑loomed linens, Scottish wools, Japanese cottons, and raw silks. Each bolt is selected personally by Dariusz.</p>
+      <ul><li>· Undyed, unbleached options</li><li>· Rare deadstock fabrics</li><li>· Bespoke dyeing on request</li></ul>
+    </div>
+  </div>
+  <div class="materials-panel">
+    <img src="https://static.wixstatic.com/media/372d64_51ec79ac200040a3b409c5206d9b8f88~mv2.jpeg/v1/fill/w_1000,h_1000,al_c,q_85,enc_avif/372d64_51ec79ac200040a3b409c5206d9b8f88~mv2.jpeg" alt="Hand stitching" loading="lazy">
+    <div class="materials-content">
+      <h3>Provenance of craft</h3>
+      <p>Every commission is logged in the Atelier Archive: the client’s name, the date, the fabric origin, and the hours of handwork. Your garment carries its own story.</p>
+      <ul><li>· Signed & numbered</li><li>· Lifetime care advice</li><li>· Future adjustments by Dariusz</li></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Testimonial -->
+<div class="testimonial-section reveal">
+  <blockquote>“The jacket arrived not in a box, but wrapped in linen. Dariusz had remembered a detail I mentioned six months earlier – the lining became a quiet tribute to my grandmother’s garden.”</blockquote>
+  <cite>— E. L., Guild Member, Commissioned 2025</cite>
+</div>
+
+<!-- Inquiry Form (The heart of the page) -->
+<section id="inquiry" class="inquiry-section">
+  <div class="inquiry-intro reveal">
+    <span class="section-label">Begin a dialogue</span>
+    <h2>Request an audience<br>with Dariusz</h2>
+    <div class="divider"></div>
+    <p>Commissions are accepted on a rolling basis, but each year only twelve garments leave the atelier. Share your vision – even a seed of an idea – and Dariusz will respond personally.</p>
+    <p class="note">A consultation does not obligate a commission. If the alignment is right, you will be invited to the next step.</p>
+  </div>
+  <div class="reveal" style="transition-delay:.15s">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>First name</label>
+        <input type="text" id="fName" placeholder="">
+      </div>
+      <div class="form-field">
+        <label>Last name</label>
+        <input type="text" id="lName" placeholder="">
+      </div>
+      <div class="form-field full">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="you@example.com">
+      </div>
+      <div class="form-field full">
+        <label>What type of garment are you envisioning?</label>
+        <select id="garmentType">
+          <option value="" disabled selected>— select —</option>
+          <option>Jacket / Coat</option>
+          <option>Shirt / Blouse</option>
+          <option>Trousers</option>
+          <option>Full ensemble (2+ pieces)</option>
+          <option>Other (describe below)</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Tell Dariusz about your vision, inspiration, or needs</label>
+        <textarea rows="5" id="message" placeholder="Colors, silhouettes, occasions, fabrics you love…"></textarea>
+      </div>
+      <div class="form-submit">
+        <button class="btn-submit" onclick="submitInquiry()">Send inquiry</button>
+      </div>
+      <div class="form-msg" id="formMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer (same as landing) -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+      <p>MIGULASTUDIO.COM<br>+34 625 284 203<br>Maspalomas, Gran Canaria</p>
+      <div class="socials">
+        <a href="https://www.instagram.com/migula_studio/" target="_blank">Instagram</a>
+        <a href="#" target="_blank">Facebook</a>
+        <a href="#" target="_blank">TikTok</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Studio</a></li>
+        <li><a href="index.html#portfolio">Portfolio</a></li>
+        <li><a href="index.html#second-skin">Second Skin</a></li>
+        <li><a href="commission.html">Commission</a></li>
+        <li><a href="index.html#guild-form">The Guild</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Atelier</h4>
+      <ul>
+        <li><a href="#">Journal</a></li>
+        <li><a href="#">Archive</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 by Dariusz Migula. All rights reserved.</p>
+    <p style="letter-spacing:.2em;font-size:10px;">MASPALOMAS · GRAN CANARIA</p>
+  </div>
+</footer>
+
+<script>
+  // Navigation scroll effect
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60));
+
+  // Reveal on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Mobile menu
+  let menuOpen = false;
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+    const m = document.getElementById('mobileMenu');
+    const h = document.getElementById('hamburger');
+    h.classList.toggle('open', menuOpen);
+    m.style.display = menuOpen ? 'flex' : 'none';
+    setTimeout(() => m.classList.toggle('open', menuOpen), 10);
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+  }
+  function closeMenu() { if (menuOpen) toggleMenu(); }
+
+  // Form submission (frontend simulation)
+  function submitInquiry() {
+    const f = document.getElementById('fName').value.trim();
+    const l = document.getElementById('lName').value.trim();
+    const e = document.getElementById('email').value.trim();
+    const g = document.getElementById('garmentType').value;
+    const m = document.getElementById('message').value.trim();
+    const msgDiv = document.getElementById('formMsg');
+    if (!f || !l || !e || !g || !m) {
+      msgDiv.style.color = '#e07a5f';
+      msgDiv.textContent = 'Please complete all fields.';
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(e)) {
+      msgDiv.style.color = '#e07a5f';
+      msgDiv.textContent = 'A valid email is required.';
+      return;
+    }
+    msgDiv.style.color = 'var(--gold)';
+    msgDiv.textContent = 'Your inquiry has been received. Dariusz will reply within 72 hours.';
+    // Reset form (optional)
+    document.getElementById('fName').value = '';
+    document.getElementById('lName').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('garmentType').value = '';
+    document.getElementById('message').value = '';
+  }
+</script>
+</body>
+</html>

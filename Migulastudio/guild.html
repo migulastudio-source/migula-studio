@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIGULA STUDIO · The Guild</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --black: #0a0a0a; --off-black: #111; --dark: #161616; --mid: #2a2a2a;
+    --gold: #c8a97e; --gold-light: #d9bc98; --white: #f4f0eb; --muted: #777;
+    --serif: 'Georgia','Times New Roman',serif;
+    --sans: 'Helvetica Neue',Arial,sans-serif;
+    --ease: cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--white); font-family: var(--sans); overflow-x: hidden; }
+
+  /* navigation (identical) */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 48px;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.97), transparent);
+    transition: background .4s, padding .4s;
+  }
+  nav.scrolled { background: rgba(10,10,10,0.98); padding: 16px 48px; }
+  .nav-logo img { height: 26px; filter: brightness(0) invert(1); opacity: .85; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: .65; transition: opacity .3s; }
+  .nav-links a:hover { opacity: 1; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; z-index: 300; }
+  .hamburger span { display: block; width: 24px; height: 1px; background: var(--white); transition: transform .4s var(--ease), opacity .3s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  .mobile-menu {
+    display: none; position: fixed; inset: 0; z-index: 150;
+    background: rgba(10,10,10,0.98); backdrop-filter: blur(12px);
+    flex-direction: column; justify-content: center; align-items: center; gap: 36px;
+    opacity: 0; transition: opacity .4s;
+  }
+  .mobile-menu.open { opacity: 1; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--white); text-decoration: none; letter-spacing: .05em; transition: color .3s; }
+  .mobile-menu a:hover { color: var(--gold); }
+
+  /* buttons & shared */
+  .btn { display: inline-block; padding: 14px 36px; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; text-decoration: none; transition: background .3s, color .3s, transform .3s; cursor: pointer; }
+  .btn-gold { background: var(--gold); color: var(--black); }
+  .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-outline { background: transparent; color: var(--white); border: 1px solid rgba(200,169,126,.45); }
+  .btn-outline:hover { background: rgba(200,169,126,.1); color: var(--gold-light); transform: translateY(-2px); }
+  .section-label { font-size: 9px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; display: block; }
+  .divider { width: 40px; height: 1px; background: var(--gold); margin: 28px 0; }
+  .reveal { opacity:0; transform:translateY(36px); transition:opacity .8s ease, transform .8s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* hero */
+  .guild-hero {
+    position: relative; height: 70vh; min-height: 550px;
+    display: flex; align-items: flex-end; padding: 72px 64px;
+    background: url('https://static.wixstatic.com/media/372d64_78cc5f8f10a242e8a60172e25fcf92c4~mv2.jpg/v1/fill/w_1500,h_900,al_c,q_85,enc_avif/372d64_78cc5f8f10a242e8a60172e25fcf92c4~mv2.jpg') center 30%/cover no-repeat;
+  }
+  .guild-hero::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(10,10,10,.85) 0%, rgba(10,10,10,.2) 70%);
+  }
+  .hero-content { position: relative; z-index: 2; max-width: 680px; }
+  .hero-eyebrow { font-size: 10px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 22px; }
+  .hero-title { font-family: var(--serif); font-size: clamp(44px,6vw,80px); font-weight: 400; line-height: 1.1; margin-bottom: 24px; }
+  .hero-title em { font-style: italic; color: var(--gold-light); }
+  .hero-sub { font-size: 14px; line-height: 1.8; color: rgba(244,240,235,.7); max-width: 520px; margin-bottom: 40px; }
+
+  /* philosophy of the guild */
+  .philosophy-guild {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 72px;
+    padding: 100px 64px; background: var(--off-black); align-items: center;
+  }
+  .philosophy-text h2 { font-family: var(--serif); font-size: clamp(32px,3.5vw,48px); font-weight: 400; margin-bottom: 24px; }
+  .philosophy-text p { font-size: 14px; line-height: 1.9; color: rgba(244,240,235,.62); margin-bottom: 20px; }
+  .philosophy-img img { width: 100%; aspect-ratio: 1; object-fit: cover; filter: grayscale(15%); transition: filter .5s; }
+
+  /* membership benefits (3 columns) */
+  .benefits-section {
+    padding: 100px 64px; background: var(--black);
+    text-align: center;
+  }
+  .benefits-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 48px;
+    margin-top: 56px;
+  }
+  .benefit-item span { font-size: 32px; color: var(--gold); opacity: .6; display: block; margin-bottom: 20px; }
+  .benefit-item h3 { font-size: 14px; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 12px; }
+  .benefit-item p { font-size: 13px; line-height: 1.7; color: var(--muted); }
+
+  /* limited spots & cycle */
+  .cycle-section {
+    padding: 100px 64px; background: var(--off-black);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px;
+    align-items: center;
+  }
+  .cycle-text h2 { font-family: var(--serif); font-size: clamp(28px,3vw,42px); margin-bottom: 24px; }
+  .cycle-text p { font-size: 14px; line-height: 1.9; color: rgba(244,240,235,.62); margin-bottom: 20px; }
+  .cycle-number { font-family: var(--serif); font-size: 72px; color: var(--gold); opacity: .3; line-height: 1; margin-bottom: 16px; }
+
+  /* testimonial */
+  .testimonial-guild {
+    padding: 100px 64px; text-align: center; background: var(--black);
+    border-top: 1px solid var(--mid); border-bottom: 1px solid var(--mid);
+  }
+  .testimonial-guild blockquote {
+    font-family: var(--serif); font-size: clamp(20px,2.5vw,30px);
+    max-width: 780px; margin: 0 auto 28px; font-style: italic;
+    color: rgba(244,240,235,.85);
+  }
+  .testimonial-guild cite { font-size: 11px; letter-spacing: .2em; color: var(--gold); text-transform: uppercase; }
+
+  /* application / interest form */
+  .application-section {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    padding: 100px 64px; background: var(--off-black);
+    align-items: start;
+  }
+  .application-intro h2 { font-family: var(--serif); font-size: clamp(32px,3.5vw,48px); margin-bottom: 20px; }
+  .application-intro p { font-size: 13px; line-height: 1.85; color: rgba(244,240,235,.6); margin-bottom: 24px; }
+  .application-intro .note { font-size: 11px; letter-spacing: .08em; color: rgba(200,169,126,.6); font-style: italic; margin-top: 20px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; }
+  .form-field.full { grid-column: 1/-1; }
+  .form-field label { font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
+  .form-field input, .form-field textarea, .form-field select {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(200,169,126,.2);
+    color: var(--white); font-family: var(--sans); font-size: 13px;
+    padding: 13px 16px; outline: none; transition: border-color .3s, box-shadow .3s;
+  }
+  .form-field input:focus, .form-field textarea:focus, .form-field select:focus {
+    border-color: rgba(200,169,126,.6); box-shadow: 0 0 0 1px rgba(200,169,126,0.2);
+  }
+  .btn-submit {
+    width: 100%; padding: 15px; background: var(--gold); color: var(--black);
+    border: none; font-family: var(--sans); font-size: 10px; letter-spacing: .25em;
+    text-transform: uppercase; cursor: pointer; transition: background .3s, transform .3s;
+  }
+  .btn-submit:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .form-msg { grid-column: 1/-1; font-size: 12px; text-align: center; color: var(--gold); min-height: 18px; margin-top: 8px; }
+
+  /* footer (identical) */
+  footer { background: var(--black); border-top: 1px solid var(--mid); padding: 64px 64px 36px; }
+  .footer-inner { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+  .footer-brand img { height: 22px; filter: brightness(0) invert(1); opacity: .55; margin-bottom: 18px; display: block; }
+  .footer-brand p { font-size: 12px; line-height: 1.9; color: var(--muted); }
+  .footer-col h4 { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 10px; }
+  .footer-col a { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: .04em; transition: color .3s; }
+  .footer-col a:hover { color: var(--white); }
+  .socials { display: flex; gap: 16px; margin-top: 4px; }
+  .socials a { font-size: 11px; letter-spacing: .12em; color: var(--muted); text-decoration: none; transition: color .3s; }
+  .socials a:hover { color: var(--gold); }
+  .footer-bottom { border-top: 1px solid var(--mid); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-bottom p { font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+
+  @media (max-width: 860px) {
+    nav { padding: 18px 24px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: flex; }
+    .guild-hero { padding: 48px 28px; height: 60vh; }
+    .philosophy-guild, .cycle-section, .application-section { grid-template-columns: 1fr; padding: 72px 28px; gap: 44px; }
+    .benefits-section { padding: 72px 28px; }
+    .benefits-grid { grid-template-columns: 1fr; gap: 32px; }
+    .testimonial-guild { padding: 72px 28px; }
+    footer { padding: 56px 28px 28px; }
+    .footer-inner { grid-template-columns: 1fr 1fr; gap: 36px; }
+    .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (max-width: 480px) {
+    .hero-title { font-size: 38px; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .application-section .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">
+    <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+  </div>
+  <ul class="nav-links">
+    <li><a href="studio.html">Studio</a></li>
+    <li><a href="index.html#portfolio">Portfolio</a></li>
+    <li><a href="second-skin.html">Second Skin</a></li>
+    <li><a href="commission.html">Commission</a></li>
+    <li><a href="guild.html" style="opacity:1;">The Guild</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="studio.html">Studio</a>
+  <a href="index.html#portfolio">Portfolio</a>
+  <a href="second-skin.html">Second Skin</a>
+  <a href="commission.html">Commission</a>
+  <a href="guild.html">The Guild</a>
+</div>
+
+<!-- Hero -->
+<section class="guild-hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Closed Atelier · Private Circle</p>
+    <h1 class="hero-title">The Migula Guild<br><em>Not a membership. A kinship.</em></h1>
+    <p class="hero-sub">A limited circle of clients who commission work through an ongoing dialogue with Dariusz. Twenty spots per cycle. No waiting list — only alignment.</p>
+    <a href="#apply" class="btn btn-gold">Request consideration</a>
+  </div>
+</section>
+
+<!-- Philosophy of the Guild -->
+<div class="philosophy-guild reveal">
+  <div class="philosophy-text">
+    <span class="section-label">Why the guild</span>
+    <h2>More than a client</h2>
+    <div class="divider"></div>
+    <p>The Guild was born from a simple observation: the most meaningful garments emerge from repeated collaboration, not a single transaction. Dariusz established the Guild to work with individuals over years — not seasons.</p>
+    <p>Members receive first access to new fabrics, private viewings, and the ability to commission without repeating the introductory process. But the true value is quieter: a shared language of craft.</p>
+    <p><strong>“I want to know how you live, not just what you wear.”</strong> — Dariusz Migula</p>
+  </div>
+  <div class="philosophy-img">
+    <img src="https://static.wixstatic.com/media/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg/v1/fill/w_800,h_800,al_c,q_85,enc_avif/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg" alt="Guild emblem detail" loading="lazy">
+  </div>
+</div>
+
+<!-- Benefits -->
+<section class="benefits-section reveal">
+  <span class="section-label">Privileges</span>
+  <h2 style="font-family:var(--serif); font-size:clamp(28px,3vw,42px);">What membership affords</h2>
+  <div class="divider" style="margin: 0 auto 28px;"></div>
+  <div class="benefits-grid">
+    <div class="benefit-item"><span>✉️</span><h3>Direct dialogue</h3><p>No intermediaries — communicate directly with Dariusz via private channel.</p></div>
+    <div class="benefit-item"><span>🧵</span><h3>First look</h3><p>Preview rare fabrics and one‑off samples before they are offered elsewhere.</p></div>
+    <div class="benefit-item"><span>📜</span><h3>Archived provenance</h3><p>Every commission logged in the Guild Archive — your name, the date, the story.</p></div>
+  </div>
+</section>
+
+<!-- Limited spots & cycle -->
+<div class="cycle-section reveal">
+  <div class="cycle-text">
+    <span class="section-label">Exclusivity</span>
+    <div class="cycle-number">20</div>
+    <h2>Spots per annual cycle</h2>
+    <p>The Guild is not a loyalty program. It is a conscious limitation. Dariusz accepts no more than twenty active members each year. When a spot opens, it is offered to those who have expressed genuine alignment — never through open advertisement.</p>
+    <p>Current cycle: <strong style="color:var(--gold);">2026 – 7 spots remaining</strong></p>
+    <a href="#apply" class="btn btn-outline" style="margin-top: 16px;">Apply for consideration</a>
+  </div>
+  <div class="cycle-text">
+    <div class="cycle-number">∞</div>
+    <h2>No expiry</h2>
+    <p>Once accepted, membership is ongoing. You are not required to commission every year. The relationship endures — a quiet understanding that when you are ready, the atelier is there.</p>
+  </div>
+</div>
+
+<!-- Testimonial -->
+<div class="testimonial-guild reveal">
+  <blockquote>“I have been a Guild member for three years. Dariusz knows my proportions better than I do. Each piece is a continuation of the last — a living wardrobe that grows with me.”</blockquote>
+  <cite>— S. R., Guild Member since 2023</cite>
+</div>
+
+<!-- Application / interest form -->
+<section id="apply" class="application-section">
+  <div class="application-intro reveal">
+    <span class="section-label">Submit for consideration</span>
+    <h2>Request an invitation</h2>
+    <div class="divider"></div>
+    <p>The Guild does not accept general applications. However, you may express your interest. Dariusz reviews each submission personally. If there is alignment, you will be invited to an introductory conversation.</p>
+    <p class="note">Submissions are reviewed quarterly. Due to the limited number of spots, not all expressions receive a reply — but each is read.</p>
+  </div>
+  <div class="reveal" style="transition-delay:.15s">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>First name</label>
+        <input type="text" id="fName">
+      </div>
+      <div class="form-field">
+        <label>Last name</label>
+        <input type="text" id="lName">
+      </div>
+      <div class="form-field full">
+        <label>Email</label>
+        <input type="email" id="email">
+      </div>
+      <div class="form-field full">
+        <label>Why are you drawn to The Guild?</label>
+        <textarea rows="5" id="message" placeholder="Tell Dariusz about your relationship with clothing, any past commissions, or what you seek in a long‑term atelier relationship…"></textarea>
+      </div>
+      <div class="form-submit">
+        <button class="btn-submit" onclick="submitGuildInterest()">Send expression</button>
+      </div>
+      <div class="form-msg" id="formMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+      <p>MIGULASTUDIO.COM<br>+34 625 284 203<br>Maspalomas, Gran Canaria</p>
+      <div class="socials">
+        <a href="https://www.instagram.com/migula_studio/" target="_blank">Instagram</a>
+        <a href="#" target="_blank">Facebook</a>
+        <a href="#" target="_blank">TikTok</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="studio.html">Studio</a></li>
+        <li><a href="index.html#portfolio">Portfolio</a></li>
+        <li><a href="second-skin.html">Second Skin</a></li>
+        <li><a href="commission.html">Commission</a></li>
+        <li><a href="guild.html">The Guild</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Atelier</h4>
+      <ul>
+        <li><a href="#">Journal</a></li>
+        <li><a href="#">Archive</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 by Dariusz Migula. All rights reserved.</p>
+    <p style="letter-spacing:.2em;font-size:10px;">MASPALOMAS · GRAN CANARIA</p>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60));
+
+  // Reveal on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Mobile menu
+  let menuOpen = false;
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+    const m = document.getElementById('mobileMenu');
+    const h = document.getElementById('hamburger');
+    h.classList.toggle('open', menuOpen);
+    m.style.display = menuOpen ? 'flex' : 'none';
+    setTimeout(() => m.classList.toggle('open', menuOpen), 10);
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+  }
+  function closeMenu() { if (menuOpen) toggleMenu(); }
+
+  // Form submission (simulated)
+  function submitGuildInterest() {
+    const f = document.getElementById('fName').value.trim();
+    const l = document.getElementById('lName').value.trim();
+    const e = document.getElementById('email').value.trim();
+    const m = document.getElementById('message').value.trim();
+    const msgDiv = document.getElementById('formMsg');
+    if (!f || !l || !e || !m) {
+      msgDiv.style.color = '#e07a5f';
+      msgDiv.textContent = 'Please complete all fields.';
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(e)) {
+      msgDiv.style.color = '#e07a5f';
+      msgDiv.textContent = 'Valid email required.';
+      return;
+    }
+    msgDiv.style.color = 'var(--gold)';
+    msgDiv.textContent = 'Your expression has been received. If there is alignment, Dariusz will reach out within 30 days.';
+    document.getElementById('fName').value = '';
+    document.getElementById('lName').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('message').value = '';
+  }
+</script>
+</body>
+</html>

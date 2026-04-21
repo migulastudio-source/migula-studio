@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIGULA STUDIO · Second Skin</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --black: #0a0a0a; --off-black: #111; --dark: #161616; --mid: #2a2a2a;
+    --gold: #c8a97e; --gold-light: #d9bc98; --white: #f4f0eb; --muted: #777;
+    --serif: 'Georgia','Times New Roman',serif;
+    --sans: 'Helvetica Neue',Arial,sans-serif;
+    --ease: cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--white); font-family: var(--sans); overflow-x: hidden; }
+
+  /* navigation */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 48px;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.97), transparent);
+    transition: background .4s, padding .4s;
+  }
+  nav.scrolled { background: rgba(10,10,10,0.98); padding: 16px 48px; }
+  .nav-logo img { height: 26px; filter: brightness(0) invert(1); opacity: .85; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: .65; transition: opacity .3s; }
+  .nav-links a:hover { opacity: 1; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; z-index: 300; }
+  .hamburger span { display: block; width: 24px; height: 1px; background: var(--white); transition: transform .4s var(--ease), opacity .3s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  .mobile-menu {
+    display: none; position: fixed; inset: 0; z-index: 150;
+    background: rgba(10,10,10,0.98); backdrop-filter: blur(12px);
+    flex-direction: column; justify-content: center; align-items: center; gap: 36px;
+    opacity: 0; transition: opacity .4s;
+  }
+  .mobile-menu.open { opacity: 1; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--white); text-decoration: none; letter-spacing: .05em; transition: color .3s; }
+  .mobile-menu a:hover { color: var(--gold); }
+
+  /* buttons & shared */
+  .btn { display: inline-block; padding: 14px 36px; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; text-decoration: none; transition: background .3s, color .3s, transform .3s; cursor: pointer; }
+  .btn-gold { background: var(--gold); color: var(--black); }
+  .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-outline { background: transparent; color: var(--white); border: 1px solid rgba(200,169,126,.45); }
+  .btn-outline:hover { background: rgba(200,169,126,.1); color: var(--gold-light); transform: translateY(-2px); }
+  .section-label { font-size: 9px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; display: block; }
+  .divider { width: 40px; height: 1px; background: var(--gold); margin: 28px 0; }
+  .reveal { opacity:0; transform:translateY(36px); transition:opacity .8s ease, transform .8s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* hero */
+  .skin-hero {
+    position: relative; height: 70vh; min-height: 550px;
+    display: flex; align-items: flex-end; padding: 72px 64px;
+    background: url('https://static.wixstatic.com/media/372d64_3e940fb48dfd4904883860df3083bb3d~mv2.jpg/v1/crop/x_5,y_6,w_790,h_789/fill/w_1400,h_800,al_c,q_85,enc_avif/Classic%20Brief%20Blue%20red%20white%20(1)_edited.jpg') center 40%/cover no-repeat;
+  }
+  .skin-hero::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(10,10,10,.85) 0%, rgba(10,10,10,.2) 70%);
+  }
+  .hero-content { position: relative; z-index: 2; max-width: 600px; }
+  .hero-eyebrow { font-size: 10px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 22px; }
+  .hero-title { font-family: var(--serif); font-size: clamp(44px,6vw,80px); font-weight: 400; line-height: 1.1; margin-bottom: 24px; }
+  .hero-title em { font-style: italic; color: var(--gold-light); }
+  .hero-sub { font-size: 14px; line-height: 1.8; color: rgba(244,240,235,.7); max-width: 480px; margin-bottom: 40px; }
+
+  /* philosophy */
+  .philosophy-skin {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 72px;
+    padding: 100px 64px; background: var(--off-black); align-items: center;
+  }
+  .philosophy-text h2 { font-family: var(--serif); font-size: clamp(32px,3.5vw,48px); font-weight: 400; margin-bottom: 24px; }
+  .philosophy-text p { font-size: 14px; line-height: 1.9; color: rgba(244,240,235,.62); margin-bottom: 20px; }
+  .philosophy-img img { width: 100%; aspect-ratio: 1; object-fit: cover; filter: grayscale(10%); transition: filter .5s; }
+  .philosophy-img img:hover { filter: grayscale(0); }
+
+  /* collections */
+  .collections { padding: 100px 64px; background: var(--black); }
+  .collection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 56px; }
+  .collection-card { position: relative; overflow: hidden; aspect-ratio: 1; }
+  .collection-card img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.7); transition: transform .8s ease, filter .8s; }
+  .collection-card:hover img { transform: scale(1.04); filter: brightness(.45); }
+  .collection-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,10,10,.9) 0%, transparent 50%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 32px 36px;
+  }
+  .collection-overlay h3 { font-family: var(--serif); font-size: 28px; font-weight: 400; margin-bottom: 12px; }
+  .collection-overlay p { font-size: 13px; line-height: 1.6; color: rgba(244,240,235,.7); max-width: 280px; margin-bottom: 20px; }
+
+  /* material story */
+  .material-story {
+    padding: 100px 64px; background: var(--off-black);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+  }
+  .material-story h2 { font-family: var(--serif); font-size: clamp(28px,3vw,42px); margin-bottom: 24px; }
+  .material-story p { font-size: 14px; line-height: 1.9; color: rgba(244,240,235,.62); margin-bottom: 20px; }
+  .material-list { list-style: none; margin-top: 24px; }
+  .material-list li { font-size: 12px; margin-bottom: 12px; color: var(--gold); letter-spacing: .05em; }
+  .material-img img { width: 100%; aspect-ratio: 1.2; object-fit: cover; filter: brightness(.8); }
+
+  /* care */
+  .care-section {
+    padding: 100px 64px; text-align: center; background: var(--black);
+    border-top: 1px solid var(--mid); border-bottom: 1px solid var(--mid);
+  }
+  .care-section h2 { font-family: var(--serif); font-size: clamp(28px,3vw,42px); margin-bottom: 28px; }
+  .care-grid { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; margin-top: 40px; }
+  .care-item { max-width: 240px; }
+  .care-item span { font-size: 24px; color: var(--gold); opacity: .6; display: block; margin-bottom: 16px; }
+  .care-item p { font-size: 12px; line-height: 1.6; color: var(--muted); }
+
+  /* testimonials — 3-col real reviews */
+  .testimonials-section {
+    padding: 100px 64px; background: var(--off-black);
+  }
+  .testimonials-header { text-align: center; margin-bottom: 60px; }
+  .testimonials-header h2 { font-family: var(--serif); font-size: clamp(24px,2.5vw,36px); font-weight: 400; margin-bottom: 12px; }
+  .testimonials-header p { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+  .reviews-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+  .review-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(200,169,126,0.12);
+    padding: 36px 32px; display: flex; flex-direction: column; gap: 24px;
+    transition: border-color .3s, background .3s;
+  }
+  .review-card:hover { background: rgba(255,255,255,0.05); border-color: rgba(200,169,126,0.28); }
+  .review-stars { display: flex; gap: 4px; }
+  .review-stars span { color: var(--gold); font-size: 12px; }
+  .review-text { font-family: var(--serif); font-size: 15px; line-height: 1.8; color: rgba(244,240,235,.8); font-style: italic; flex: 1; }
+  .review-footer { border-top: 1px solid rgba(200,169,126,0.15); padding-top: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .review-author { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--gold); }
+  .review-meta { font-size: 10px; letter-spacing: .08em; color: var(--muted); }
+  .review-source { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(200,169,126,0.4); margin-top: 4px; }
+
+  /* inquiry / access */
+  .access-section {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    padding: 100px 64px; background: var(--black); align-items: center;
+  }
+  .access-intro h2 { font-family: var(--serif); font-size: clamp(32px,3.5vw,48px); margin-bottom: 20px; }
+  .access-intro p { font-size: 13px; line-height: 1.85; color: rgba(244,240,235,.6); margin-bottom: 24px; }
+  .access-form .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; }
+  .form-field.full { grid-column: 1/-1; }
+  .form-field label { font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
+  .form-field input, .form-field textarea, .form-field select {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(200,169,126,.2);
+    color: var(--white); font-family: var(--sans); font-size: 13px;
+    padding: 13px 16px; outline: none; transition: border-color .3s, box-shadow .3s;
+  }
+  .form-field input:focus, .form-field textarea:focus, .form-field select:focus {
+    border-color: rgba(200,169,126,.6); box-shadow: 0 0 0 1px rgba(200,169,126,0.2);
+  }
+  .form-field select option { background: var(--dark); }
+  .form-submit { grid-column: 1/-1; }
+  .btn-submit {
+    width: 100%; padding: 15px; background: var(--gold); color: var(--black);
+    border: none; font-family: var(--sans); font-size: 10px; letter-spacing: .25em;
+    text-transform: uppercase; cursor: pointer; transition: background .3s, transform .3s;
+  }
+  .btn-submit:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .form-msg { grid-column: 1/-1; font-size: 12px; text-align: center; color: var(--gold); min-height: 18px; margin-top: 8px; }
+
+  /* footer */
+  footer { background: var(--black); border-top: 1px solid var(--mid); padding: 64px 64px 36px; }
+  .footer-inner { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+  .footer-brand img { height: 22px; filter: brightness(0) invert(1); opacity: .55; margin-bottom: 18px; display: block; }
+  .footer-brand p { font-size: 12px; line-height: 1.9; color: var(--muted); }
+  .footer-col h4 { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 10px; }
+  .footer-col a { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: .04em; transition: color .3s; }
+  .footer-col a:hover { color: var(--white); }
+  .socials { display: flex; gap: 16px; margin-top: 4px; }
+  .socials a { font-size: 11px; letter-spacing: .12em; color: var(--muted); text-decoration: none; transition: color .3s; }
+  .socials a:hover { color: var(--gold); }
+  .footer-bottom { border-top: 1px solid var(--mid); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-bottom p { font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+
+  @media (max-width: 860px) {
+    nav { padding: 18px 24px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .mobile-menu { display: flex; }
+    .skin-hero { padding: 48px 28px; height: 60vh; }
+    .philosophy-skin, .material-story, .access-section { grid-template-columns: 1fr; padding: 72px 28px; gap: 44px; }
+    .collections { padding: 72px 28px; }
+    .collection-grid { grid-template-columns: 1fr; gap: 3px; }
+    .care-section, .testimonials-section { padding: 72px 28px; }
+    .care-grid { gap: 32px; }
+    .reviews-grid { grid-template-columns: 1fr; gap: 2px; }
+    footer { padding: 56px 28px 28px; }
+    .footer-inner { grid-template-columns: 1fr 1fr; gap: 36px; }
+    .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (max-width: 480px) {
+    .hero-title { font-size: 38px; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .access-form .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">
+    <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Studio</a></li>
+    <li><a href="index.html#portfolio">Portfolio</a></li>
+    <li><a href="second-skin.html" style="opacity:1;">Second Skin</a></li>
+    <li><a href="commission.html">Commission</a></li>
+    <li><a href="index.html#guild-form">The Guild</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" onclick="closeMenu()">Studio</a>
+  <a href="index.html#portfolio" onclick="closeMenu()">Portfolio</a>
+  <a href="second-skin.html" onclick="closeMenu()">Second Skin</a>
+  <a href="commission.html" onclick="closeMenu()">Commission</a>
+  <a href="index.html#guild-form" onclick="closeMenu()">The Guild</a>
+</div>
+
+<!-- Hero -->
+<section class="skin-hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Migula Studio · Essential Layer</p>
+    <h1 class="hero-title">The first layer.<br><em>The last thought.</em></h1>
+    <p class="hero-sub">What you wear closest to your skin deserves the same attention as a coat. Clean construction, natural materials, no compromise.</p>
+    <a href="#access" class="btn btn-gold">Explore the collection</a>
+  </div>
+</section>
+
+<!-- Philosophy -->
+<div class="philosophy-skin reveal">
+  <div class="philosophy-text">
+    <span class="section-label">The philosophy</span>
+    <h2>A second skin is not an undergarment.<br>It is a ritual.</h2>
+    <div class="divider"></div>
+    <p>Most layers hide. Ours reveal — not the body, but the intention. Each piece is cut from natural fibres, finished with flat seams and zero visible branding. No unnecessary elastic, no synthetics where they don't belong.</p>
+    <p>Dariusz designs Second Skin for the hours when no one is watching. Because that is when true comfort becomes essential.</p>
+  </div>
+  <div class="philosophy-img">
+    <img src="https://static.wixstatic.com/media/372d64_692c2a83f9834c2d8e4d83fbbeccf767~mv2.jpeg/v1/fill/w_800,h_800,al_c,q_85,enc_avif,quality_auto/IMG_0619.jpeg" alt="Second skin fabric detail" loading="lazy">
+  </div>
+</div>
+
+<!-- Two collections -->
+<section class="collections reveal">
+  <span class="section-label">The lines</span>
+  <h2 style="font-family:var(--serif); font-size:clamp(28px,3vw,42px);">Two expressions of the essential</h2>
+  <div class="divider"></div>
+  <div class="collection-grid">
+    <div class="collection-card">
+      <img src="https://static.wixstatic.com/media/372d64_3e940fb48dfd4904883860df3083bb3d~mv2.jpg/v1/crop/x_5,y_6,w_790,h_789/fill/w_790,h_789,al_c,q_85,enc_avif,quality_auto/Classic%20Brief%20Blue%20red%20white%20(1)_edited.jpg" alt="Essential Line" loading="lazy">
+      <div class="collection-overlay">
+        <h3>Essential Line</h3>
+        <p>Unmarked comfort. Pure shapes in natural cotton. Produced in Poland, designed to last. From 39 €.</p>
+        <a href="#access" class="btn btn-outline" style="align-self:flex-start;">Request lookbook</a>
+      </div>
+    </div>
+    <div class="collection-card">
+      <img src="https://static.wixstatic.com/media/372d64_692c2a83f9834c2d8e4d83fbbeccf767~mv2.jpeg/v1/fill/w_800,h_800,al_c,q_85,enc_avif,quality_auto/IMG_0619.jpeg" alt="Bespoke Line" loading="lazy">
+      <div class="collection-overlay">
+        <h3>Custom Fit</h3>
+        <p>The Essential in your exact measurements — or with a discreet hand-embroidered detail. Your specification, made by Dariusz.</p>
+        <a href="commission.html" class="btn btn-outline" style="align-self:flex-start;">Commission</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Material story -->
+<div class="material-story reveal">
+  <div class="material-text">
+    <span class="section-label">Material</span>
+    <h2>Only what grows again</h2>
+    <p>No polyester, no microplastics. Second Skin uses natural cotton — selected for softness, weight, and how it holds its shape after 60 washes. We tested multiple suppliers. We chose one.</p>
+    <p>The construction is what most brands skip: flat seams that don't press into skin, no tags, no logos on the garment itself. The label is on the packaging — not on you.</p>
+    <ul class="material-list">
+      <li>· Flat seams throughout — no pressure points</li>
+      <li>· No internal branding or tags</li>
+      <li>· Produced in Poland, shipped from Berlin</li>
+      <li>· Each piece numbered and registered</li>
+    </ul>
+  </div>
+  <div class="material-img">
+    <img src="https://static.wixstatic.com/media/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg/v1/fill/w_1000,h_1000,al_c,q_85,enc_avif/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg" alt="Fabric texture" loading="lazy">
+  </div>
+</div>
+
+<!-- Care -->
+<section class="care-section reveal">
+  <h2>Built to last. Easy to keep.</h2>
+  <div class="divider" style="margin: 0 auto 28px;"></div>
+  <p style="max-width:600px; margin:0 auto 20px; color:var(--muted); font-size:14px; line-height:1.8;">Hand wash cold. Dry flat. Never tumble dry. Natural fibres soften with each wash — they improve, not degrade. Any issue with fit or condition: contact us directly.</p>
+  <div class="care-grid">
+    <div class="care-item">
+      <span>✦</span>
+      <p>Each piece repaired or altered<br>on request — contact us directly</p>
+    </div>
+    <div class="care-item">
+      <span>✦</span>
+      <p>Certificate of provenance included<br>with every piece</p>
+    </div>
+    <div class="care-item">
+      <span>✦</span>
+      <p>Piece number registered<br>in the Migula archive</p>
+    </div>
+  </div>
+</section>
+
+<!-- Real Reviews -->
+<section class="testimonials-section reveal">
+  <div class="testimonials-header">
+    <p>Verified · Google Reviews</p>
+    <h2>What clients say</h2>
+  </div>
+  <div class="reviews-grid">
+
+    <div class="review-card">
+      <div class="review-stars">
+        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+      </div>
+      <p class="review-text">"I can't recommend Darius and his wonderful shop enough. The designs are great and limited so you will also look special — and as he makes them to your specifications, the items are a great fit. He turned my two great new T-shirts in a day. Stunning service and can't wait to visit again."</p>
+      <div class="review-footer">
+        <span class="review-author">Paul Hansell</span>
+        <span class="review-meta">Local Guide · 95 reviews</span>
+        <span class="review-source">Google · Verified purchase</span>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <div class="review-stars">
+        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+      </div>
+      <p class="review-text">"Good advice. Good job on time delivery. Nice, original and unique piece. I recommend."</p>
+      <div class="review-footer">
+        <span class="review-author">Vincent Lebolloch</span>
+        <span class="review-meta">Local Guide · 68 reviews</span>
+        <span class="review-source">Google · Verified purchase</span>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <div class="review-stars">
+        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+      </div>
+      <p class="review-text">"Dienstag war Anprobe und eben meine für mich angefertigte Hose abgeholt. Kenne den Schneider schon ein paar Jahre — die Hosen habe ich heute noch! Qualität, Verarbeitung exzellent. Kundenservice exzellent. Wer sich mal was Außergewöhnliches gönnen möchte, muss hier einfach vorbeischauen."</p>
+      <div class="review-footer">
+        <span class="review-author">Andreas Prust</span>
+        <span class="review-meta">6 Rezensionen</span>
+        <span class="review-source">Google · Verified purchase</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Access / Inquiry -->
+<section id="access" class="access-section">
+  <div class="access-intro reveal">
+    <span class="section-label">Acquire</span>
+    <h2>Request access to the collection</h2>
+    <div class="divider"></div>
+    <p>Second Skin is not sold through retailers. You may request a private lookbook or place a direct order. Essential Line is produced in Poland and ships from Berlin within 7–10 working days.</p>
+    <p style="font-style:italic; color:var(--gold-light);">Custom Fit orders: please mention your measurements or questions in the note field.</p>
+  </div>
+  <div class="access-form reveal" style="transition-delay:.15s">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>First name</label>
+        <input type="text" id="fName">
+      </div>
+      <div class="form-field">
+        <label>Last name</label>
+        <input type="text" id="lName">
+      </div>
+      <div class="form-field full">
+        <label>Email</label>
+        <input type="email" id="email">
+      </div>
+      <div class="form-field full">
+        <label>Interest</label>
+        <select id="interest">
+          <option value="" disabled selected>— select —</option>
+          <option>Essential Line — ready to wear</option>
+          <option>Custom Fit — your measurements</option>
+          <option>Both — send lookbook</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Note (optional)</label>
+        <textarea rows="3" id="message" placeholder="Size, colour preference, measurements, or any question…"></textarea>
+      </div>
+      <div class="form-submit">
+        <button class="btn-submit" onclick="submitAccess()">Send request</button>
+      </div>
+      <div class="form-msg" id="formMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+      <p>MIGULASTUDIO.COM<br>studio@migulastudio.com</p>
+      <div class="socials" style="margin-top:16px;">
+        <a href="https://www.instagram.com/migula_studio/" target="_blank">Instagram</a>
+        <a href="#" target="_blank">Facebook</a>
+        <a href="#" target="_blank">TikTok</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="index.html">Studio</a></li>
+        <li><a href="index.html#portfolio">Portfolio</a></li>
+        <li><a href="second-skin.html">Second Skin</a></li>
+        <li><a href="commission.html">Commission</a></li>
+        <li><a href="index.html#guild-form">The Guild</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Atelier</h4>
+      <ul>
+        <li><a href="#">Journal</a></li>
+        <li><a href="#">Archive</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+        <li><a href="#">Returns</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Dariusz Migula. All rights reserved.</p>
+    <p style="letter-spacing:.2em;font-size:10px;">MIGULA STUDIO · BERLIN</p>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60));
+
+  // Reveal on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Mobile menu
+  let menuOpen = false;
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+    const m = document.getElementById('mobileMenu');
+    const h = document.getElementById('hamburger');
+    h.classList.toggle('open', menuOpen);
+    m.style.display = menuOpen ? 'flex' : 'none';
+    setTimeout(() => m.classList.toggle('open', menuOpen), 10);
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+  }
+  function closeMenu() { if (menuOpen) toggleMenu(); }
+
+  // Form
+  function submitAccess() {
+    const f = document.getElementById('fName').value.trim();
+    const l = document.getElementById('lName').value.trim();
+    const e = document.getElementById('email').value.trim();
+    const i = document.getElementById('interest').value;
+    const msgDiv = document.getElementById('formMsg');
+    if (!f || !l || !e || !i) {
+      msgDiv.style.color = '#e07a5f';
+      msgDiv.textContent = 'Please fill in all required fields.';
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(e)) {
+      msgDiv.style.color = '#e07a5f';
+      msgDiv.textContent = 'Valid email required.';
+      return;
+    }
+    msgDiv.style.color = 'var(--gold)';
+    msgDiv.textContent = 'Request received. You will hear from us within 48 hours.';
+    ['fName','lName','email','message'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('interest').value = '';
+  }
+</script>
+</body>
+</html>
