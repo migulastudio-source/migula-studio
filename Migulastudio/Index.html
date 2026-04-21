@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIGULA STUDIO · BESTIA</title>
+<style>
+  /* --- RESET & VARIABLES (matching brand aesthetic) --- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --black: #0a0a0a; --off-black: #111; --dark: #161616; --mid: #2a2a2a;
+    --gold: #c8a97e; --gold-light: #d9bc98; --white: #f4f0eb; --muted: #777;
+    --serif: 'Georgia','Times New Roman',serif;
+    --sans: 'Helvetica Neue',Arial,sans-serif;
+    --ease: cubic-bezier(0.25,0.46,0.45,0.94);
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--white); font-family: var(--sans); overflow-x: hidden; }
+
+  /* --- NAVIGATION --- */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 48px;
+    background: linear-gradient(to bottom, rgba(10,10,10,0.97), transparent);
+    transition: background .4s, padding .4s;
+  }
+  nav.scrolled { background: rgba(10,10,10,0.98); padding: 16px 48px; }
+  .nav-logo img { height: 26px; filter: brightness(0) invert(1); opacity: .85; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: .65; transition: opacity .3s; }
+  .nav-links a:hover { opacity: 1; }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; z-index: 300; }
+  .hamburger span { display: block; width: 24px; height: 1px; background: var(--white); transition: transform .4s var(--ease), opacity .3s; }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  .mobile-menu {
+    display: none; position: fixed; inset: 0; z-index: 150;
+    background: rgba(10,10,10,0.98); backdrop-filter: blur(12px);
+    flex-direction: column; justify-content: center; align-items: center; gap: 36px;
+    opacity: 0; transition: opacity .4s;
+  }
+  .mobile-menu.open { opacity: 1; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--white); text-decoration: none; letter-spacing: .05em; transition: color .3s; }
+  .mobile-menu a:hover { color: var(--gold); }
+  .mobile-menu .m-cta { margin-top: 16px; font-family: var(--sans); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); padding: 12px 32px; }
+
+  /* --- HERO (BESTIA focused) --- */
+  #hero {
+    position: relative; height: 100svh; min-height: 600px;
+    display: flex; align-items: flex-end; padding: 72px 64px; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: url('https://static.wixstatic.com/media/372d64_af83812e0d5c41b8a9dbf71cf0a8a506~mv2.jpg/v1/fill/w_980,h_1742,al_c,q_85,enc_avif,quality_auto/12.jpg') center 20%/cover;
+    transition: transform 0.1s ease-out;
+  }
+  .hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(10,10,10,.82) 0%, rgba(10,10,10,.18) 60%, rgba(10,10,10,.5) 100%); }
+  .hero-content { position: relative; z-index: 2; max-width: 720px; }
+  .hero-eyebrow { font-size: 10px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 22px; opacity: 0; animation: fadeUp 1s .3s forwards; }
+  .hero-title { font-family: var(--serif); font-size: clamp(44px,7vw,92px); font-weight: 400; line-height: 1.06; margin-bottom: 28px; opacity: 0; animation: fadeUp 1s .5s forwards; }
+  .hero-title em { font-style: italic; color: var(--gold-light); }
+  .hero-sub { font-size: 13px; letter-spacing: .06em; line-height: 1.85; color: rgba(244,240,235,.62); max-width: 480px; margin-bottom: 44px; opacity: 0; animation: fadeUp 1s .7s forwards; }
+  .btn { display: inline-block; padding: 14px 36px; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; text-decoration: none; transition: background .3s, color .3s, transform .3s; }
+  .btn-gold { background: var(--gold); color: var(--black); opacity: 0; animation: fadeUp 1s .9s forwards; }
+  .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-outline { background: transparent; color: var(--white); border: 1px solid rgba(200,169,126,.45); }
+  .btn-outline:hover { background: rgba(200,169,126,.1); color: var(--gold-light); transform: translateY(-2px); }
+
+  /* --- PRODUCT SECTION (BESTIA) --- */
+  #bestia { background: var(--off-black); padding: 120px 64px; }
+  .section-label { font-size: 9px; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; display: block; }
+  .bestia-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px; align-items: start; }
+  .bestia-images { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bestia-images .main-img { grid-column: 1 / -1; aspect-ratio: 1.2; object-fit: cover; border: 1px solid rgba(200,169,126,0.15); }
+  .bestia-images .sub-img { aspect-ratio: 1; object-fit: cover; border: 1px solid rgba(200,169,126,0.1); }
+  .bestia-details h2 { font-family: var(--serif); font-size: clamp(32px,3.5vw,52px); font-weight: 400; margin-bottom: 24px; }
+  .bestia-desc { font-size: 14px; line-height: 1.9; color: rgba(244,240,235,.7); margin-bottom: 28px; }
+  .bestia-specs { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; margin: 28px 0; font-size: 12px; letter-spacing: .03em; }
+  .spec-label { color: var(--gold); text-transform: uppercase; font-size: 10px; letter-spacing: .15em; }
+  .price { font-size: 28px; font-family: var(--serif); margin: 16px 0 8px; }
+  .addon { display: flex; align-items: center; gap: 12px; margin: 24px 0 32px; }
+  .addon input { accent-color: var(--gold); width: 18px; height: 18px; }
+  .addon label { font-size: 13px; color: rgba(244,240,235,.8); }
+  .btn-block { display: block; width: fit-content; }
+
+  /* --- BESPOKE SECTION --- */
+  #bespoke {
+    background: var(--black); padding: 100px 64px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+  }
+  .bespoke-content h2 { font-family: var(--serif); font-size: clamp(32px,3.5vw,48px); font-weight: 400; margin-bottom: 24px; }
+  .bespoke-content p { font-size: 14px; line-height: 1.9; color: rgba(244,240,235,.65); margin-bottom: 28px; max-width: 500px; }
+  .bespoke-img img { width: 100%; aspect-ratio: 1; object-fit: cover; filter: grayscale(15%); border: 1px solid rgba(200,169,126,0.15); }
+
+  /* --- GUILD FORM (simplified) --- */
+  #guild-form { background: var(--off-black); padding: 100px 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .gf-intro h2 { font-family: var(--serif); font-size: clamp(28px,3vw,44px); font-weight: 400; margin-bottom: 20px; }
+  .gf-intro p { font-size: 13px; line-height: 1.85; color: rgba(244,240,235,.6); margin-bottom: 16px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 8px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label { font-size: 9px; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
+  .form-field input, .form-field textarea {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(200,169,126,.2);
+    color: var(--white); font-family: var(--sans); font-size: 13px;
+    padding: 13px 16px; outline: none; resize: none;
+  }
+  .form-field input:focus, .form-field textarea:focus { border-color: rgba(200,169,126,.6); }
+  .btn-submit {
+    width: 100%; padding: 15px; background: var(--gold); color: var(--black);
+    border: none; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; cursor: pointer;
+    transition: background .3s, transform .3s;
+  }
+  .btn-submit:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .form-msg { grid-column: 1/-1; font-size: 12px; text-align: center; color: var(--gold); min-height: 18px; }
+
+  /* --- FOOTER --- */
+  footer { background: var(--black); border-top: 1px solid var(--mid); padding: 64px 64px 36px; }
+  .footer-inner { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+  .footer-brand img { height: 22px; filter: brightness(0) invert(1); opacity: .55; margin-bottom: 18px; }
+  .footer-brand p { font-size: 12px; line-height: 1.9; color: var(--muted); }
+  .footer-col h4 { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 10px; }
+  .footer-col a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color .3s; }
+  .footer-col a:hover { color: var(--white); }
+  .footer-bottom { border-top: 1px solid var(--mid); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
+
+  /* --- ANIMATIONS & UTILS --- */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+  .reveal { opacity:0; transform:translateY(36px); transition:opacity .8s ease, transform .8s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  @media (max-width: 860px) {
+    nav { padding: 18px 24px; } nav.scrolled { padding: 14px 24px; }
+    .nav-links { display: none; } .hamburger { display: flex; }
+    .mobile-menu { display: flex; }
+    #hero { padding: 48px 28px 56px; }
+    #bestia, #bespoke, #guild-form { padding: 72px 28px; }
+    .bestia-grid, #bespoke, #guild-form { grid-template-columns: 1fr; gap: 40px; }
+    .footer-inner { grid-template-columns: 1fr; gap: 36px; }
+    .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  }
+  @media (max-width: 480px) {
+    .hero-title { font-size: 38px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav id="nav">
+  <div class="nav-logo">
+    <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+  </div>
+  <ul class="nav-links">
+    <li><a href="#bestia">BESTIA</a></li>
+    <li><a href="#bespoke">Bespoke</a></li>
+    <li><a href="#guild-form">The Guild</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#bestia" onclick="closeMenu()">BESTIA</a>
+  <a href="#bespoke" onclick="closeMenu()">Bespoke</a>
+  <a href="#guild-form" onclick="closeMenu()">The Guild</a>
+</div>
+
+<!-- HERO (BESTIA front and center) -->
+<section id="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Dariusz Migula · Atelier Berlin / Łódź</p>
+    <h1 class="hero-title">BESTIA<br><em>Exits the surface.</em></h1>
+    <p class="hero-sub">3D embroidery on a hand‑tensioned frame. Hand‑cut underlays. No interlining. One maker, one artefact at a time.</p>
+    <a href="#bestia" class="btn btn-gold">Pre‑order — €179</a>
+  </div>
+</section>
+
+<!-- BESTIA PRODUCT SECTION -->
+<section id="bestia">
+  <div class="reveal">
+    <span class="section-label">The Artefact</span>
+  </div>
+  <div class="bestia-grid">
+    <div class="bestia-images reveal" style="transition-delay:.1s">
+      <!-- Replace these placeholder images with actual BESTIA photography -->
+      <img class="main-img" src="https://static.wixstatic.com/media/372d64_af83812e0d5c41b8a9dbf71cf0a8a506~mv2.jpg/v1/fill/w_980,h_1742,al_c,q_85,enc_avif,quality_auto/12.jpg" alt="BESTIA full view">
+      <img class="sub-img" src="https://static.wixstatic.com/media/372d64_5c2ae99f5849461aaddfff45819dc4c5~mv2.jpg/v1/fill/w_710,h_710,fp_0.58_0.12,q_90,enc_avif,quality_auto/372d64_5c2ae99f5849461aaddfff45819dc4c5~mv2.jpg" alt="Embroidery detail">
+      <img class="sub-img" src="https://static.wixstatic.com/media/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg/v1/fill/w_725,h_725,fp_0.52_0.25,q_90,enc_avif,quality_auto/372d64_128f9302c0a14a159a1290e56cff8bfc~mv2.jpg" alt="Hand on frame">
+    </div>
+    <div class="bestia-details reveal" style="transition-delay:.2s">
+      <h2>BESTIA — Panther Structure</h2>
+      <div class="bestia-desc">
+        <p>This is not a print. Not a patch. It is a structure that exits the surface. Geometric embroidery forms the skeleton; hand‑placed faux fur fills each field. The Monolit Method: hand‑tensioned grain, hand‑cut cotton underlays, manual tension control, and no interlining on the reverse. Only stitch lines on soft fabric.</p>
+      </div>
+      <div class="bestia-specs">
+        <span class="spec-label">Composition</span><span>94% Cotton / 6% Elastane (or 100% Cotton)</span>
+        <span class="spec-label">Made in</span><span>Berlin (until May) / Łódź, Poland (from June 2026)</span>
+        <span class="spec-label">Construction</span><span>3–4 hours per artefact</span>
+        <span class="spec-label">Care</span><span>30°C gentle wash, no softener, no dryer</span>
+        <span class="spec-label">Reverse</span><span>No interlining — soft stitch lines only</span>
+      </div>
+      <div class="price">€179</div>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:20px;">Fixed. Never discounted. Made‑to‑order.</p>
+      
+      <!-- Second Skin add-on -->
+      <div class="addon">
+        <input type="checkbox" id="secondSkinCheckbox" onchange="updatePaymentLink()">
+        <label for="secondSkinCheckbox">Add Second Skin — numbered fabric off‑cut, hand‑signed. +€35</label>
+      </div>
+      
+      <!-- Pre-order button with dynamic Stripe link -->
+      <a id="preorderBtn" href="#" class="btn btn-gold btn-block" target="_blank">Pre‑order — Ships June 2026</a>
+      <p style="font-size:11px; color:var(--muted); margin-top:12px;">Payment processed securely via Stripe.</p>
+    </div>
+  </div>
+</section>
+
+<!-- BESPOKE COMMISSION -->
+<section id="bespoke">
+  <div class="bespoke-content reveal">
+    <span class="section-label">Work With Dariusz</span>
+    <h2>Bespoke Commission</h2>
+    <p>Your motif, interpreted in the BESTIA technique. One slot per month. You provide the source — a photograph, drawing, or found object. Dariusz builds it using the Monolit Method: hand‑tensioned, hand‑cut underlays, no interlining, hand‑cut finish.</p>
+    <p><strong>€590.</strong> 4‑week lead time. Includes 1:1 consultation and process documentation. One piece exists; the motif is not repeated.</p>
+    <a href="mailto:darius@migulastudio.com?subject=Bespoke%20Request" class="btn btn-outline">Request Invitation</a>
+  </div>
+  <div class="bespoke-img reveal" style="transition-delay:.15s">
+    <img src="https://static.wixstatic.com/media/372d64_ba7d5b9870584068b89ed2fa675a2c60~mv2.jpg/v1/fill/w_710,h_710,fp_0.09_0.15,q_90,enc_avif,quality_auto/372d64_ba7d5b9870584068b89ed2fa675a2c60~mv2.jpg" alt="Bespoke process">
+  </div>
+</section>
+
+<!-- GUILD FORM (simplified) -->
+<section id="guild-form">
+  <div class="gf-intro reveal">
+    <span class="section-label">The Migula Guild</span>
+    <h2>Join the inner circle.</h2>
+    <div style="width:40px; height:1px; background:var(--gold); margin:24px 0;"></div>
+    <p>The Guild is a private atelier for collectors. Limited to 20 active members per cycle. Submission places you on the inquiry list.</p>
+    <p style="font-style:italic; color:rgba(200,169,126,.6);">Membership does not guarantee immediate commission; it opens a dialogue.</p>
+  </div>
+  <div class="reveal" style="transition-delay:.15s">
+    <div class="form-grid">
+      <div class="form-field"><label>First Name</label><input type="text" placeholder="Dariusz" id="ff"></div>
+      <div class="form-field"><label>Last Name</label><input type="text" placeholder="Migula" id="fl"></div>
+      <div class="form-field full"><label>Email</label><input type="email" placeholder="you@example.com" id="fe"></div>
+      <div class="form-field full"><label>What draws you to The Guild?</label><textarea rows="4" placeholder="Tell Dariusz about your vision…" id="fm"></textarea></div>
+      <div class="form-submit"><button class="btn-submit" onclick="submitForm()">Request an Audience</button></div>
+      <div class="form-msg" id="formMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="https://static.wixstatic.com/media/372d64_9aa5f1c81f3b4570b6d391d19b4c0f93~mv2.png/v1/fill/w_560,h_74,al_c,q_85,enc_avif,quality_auto/migula%20_edited_edited.png" alt="Migula Studio">
+      <p>MIGULASTUDIO.COM<br>Atelier — Łódź, Poland (opening June 2026)<br>Currently Berlin</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a href="#bestia">BESTIA</a></li>
+        <li><a href="#bespoke">Bespoke</a></li>
+        <li><a href="#guild-form">The Guild</a></li>
+        <li><a href="#">Journal (soon)</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms & Conditions</a></li>
+        <li><a href="#">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Dariusz Migula. All rights reserved.</p>
+    <p>ŁÓDŹ · POLAND</p>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll effect
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60));
+
+  // Reveal on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Mobile menu
+  let menuOpen = false;
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+    const m = document.getElementById('mobileMenu');
+    const h = document.getElementById('hamburger');
+    h.classList.toggle('open', menuOpen);
+    m.style.display = menuOpen ? 'flex' : 'none';
+    setTimeout(() => m.classList.toggle('open', menuOpen), 10);
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+  }
+  function closeMenu() { if (menuOpen) toggleMenu(); }
+
+  // Stripe Payment Link update (replace with your actual Stripe Payment Links)
+  const baseLink = '#';     // REPLACE: Stripe Payment Link for BESTIA €179
+  const withSecondSkinLink = '#'; // REPLACE: Stripe Payment Link for BESTIA + Second Skin €214
+  
+  function updatePaymentLink() {
+    const checkbox = document.getElementById('secondSkinCheckbox');
+    const btn = document.getElementById('preorderBtn');
+    btn.href = checkbox.checked ? withSecondSkinLink : baseLink;
+  }
+  // Initialize
+  updatePaymentLink();
+
+  // Form submission (demo)
+  function submitForm() {
+    const f = document.getElementById('ff').value.trim();
+    const l = document.getElementById('fl').value.trim();
+    const e = document.getElementById('fe').value.trim();
+    const m = document.getElementById('fm').value.trim();
+    const msg = document.getElementById('formMsg');
+    if (!f || !l || !e || !m) { msg.style.color='#e07a5f'; msg.textContent='Please complete all fields.'; return; }
+    if (!/\S+@\S+\.\S+/.test(e)) { msg.style.color='#e07a5f'; msg.textContent='Valid email required.'; return; }
+    msg.style.color='var(--gold)';
+    msg.textContent='Your request has been received. Dariusz will respond within 48 hours.';
+    ['ff','fl','fe','fm'].forEach(id => document.getElementById(id).value = '');
+  }
+</script>
+</body>
+</html>
